@@ -26,9 +26,13 @@ namespace CollageApp.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public ActionResult<bool> DeleteStudent(int id)
         {
-            if (id < 0) return BadRequest();
+            if (id <= 0) return BadRequest();
 
             var student = StudentsRepository.Students.Where(n=> n.Id==id).FirstOrDefault();
             if (student == null) return NotFound();
