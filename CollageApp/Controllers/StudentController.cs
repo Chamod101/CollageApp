@@ -1,4 +1,5 @@
 ﻿using CollageApp.Models;
+using CollageApp.MyLogging;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CollageApp.Controllers
@@ -7,11 +8,19 @@ namespace CollageApp.Controllers
     [ApiController]
     public class StudentController : ControllerBase
     {
+        private readonly IMyLogger _myLogger;
+
+        public StudentController(IMyLogger MyLogger)
+        {
+            _myLogger = MyLogger;
+        }
+
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public ActionResult<List<StudentDTO>> GetStudents()
         {
+            _myLogger.Log("Get Students started");
             var students = StudentsRepository.Students.Select(s => new StudentDTO
             {
                 Id = s.Id,
@@ -21,21 +30,6 @@ namespace CollageApp.Controllers
             });
             return Ok(students);
 
-            //var students = new List<StudentDTO>();
-            //foreach(var item in StudentsRepository.Students)
-            //{
-            //    StudentDTO Obj = new StudentDTO()
-            //    {
-            //        Id = item.Id,
-            //        StudentName = item.StudentName,
-            //        Email = item.Email,
-            //        Address = item.Address,
-            //    };
-
-            //    students.Add(Obj);
-            //}
-
-            //return Ok(students);
         }
 
         [HttpGet("{id:int}")]
@@ -52,7 +46,7 @@ namespace CollageApp.Controllers
 
         [HttpPost]
         [Route("Create")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public ActionResult<StudentDTO> CreateStudent([FromBody]StudentDTO model)
@@ -71,10 +65,11 @@ namespace CollageApp.Controllers
             StudentsRepository.Students.Add(student);
             model.Id = id;
             return Ok(model);
+            //return CreatedAtRoute("GetStudent", new { id = model.Id }, model);
 
         }
 
-        [HttpDelete("{id:int}")]
+        [HttpDelete("{id:int}")] 
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -89,5 +84,32 @@ namespace CollageApp.Controllers
             StudentsRepository.Students.Remove(student);
             return Ok(true);
         }
-    }
+
+
+        [HttpPut]
+        [Route("Update")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public ActionResult UpdateStudent([FromBody]StudentDTO model)
+        {
+            if(model == null)
+                return BadRequest();
+
+            var exsistingUser = StudentsRepository.Students.Where(s => s.Id == model.Id).FirstOrDefault();
+
+            if(exsistingUser == null)
+            {
+                return NotFound();
+            }
+            else
+            {
+                exsistingUser.StudentName = model.StudentName;
+                exsistingUser.Address = model.Address;
+                exsistingUser.Email = model.Email;
+            }
+
+            return NoContent();
+        }
+    } 
 }
