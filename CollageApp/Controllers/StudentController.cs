@@ -1,4 +1,5 @@
-﻿using CollageApp.Models;
+﻿using CollageApp.Data;
+using CollageApp.Models;
 using CollageApp.MyLogging;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,10 +10,12 @@ namespace CollageApp.Controllers
     public class StudentController : ControllerBase
     {
         private readonly IMyLogger _myLogger;
+        private readonly CollegeDBContext _dbContext;
 
-        public StudentController(IMyLogger MyLogger)
+        public StudentController(IMyLogger MyLogger, CollegeDBContext dbContext)
         {
             _myLogger = MyLogger;
+            _dbContext = dbContext;
         }
 
         [HttpGet]
@@ -21,7 +24,7 @@ namespace CollageApp.Controllers
         public ActionResult<List<StudentDTO>> GetStudents()
         {
             _myLogger.Log("Get Students started");
-            var students = StudentsRepository.Students.Select(s => new StudentDTO
+            var students = _dbContext.Students.Select(s => new StudentDTO
             {
                 Id = s.Id,
                 StudentName = s.StudentName,
@@ -35,13 +38,13 @@ namespace CollageApp.Controllers
         [HttpGet("{id:int}")]
         public ActionResult<Student> GetStudent(int id)
         {
-            return Ok(StudentsRepository.Students.Where(n=>n.Id==id).FirstOrDefault());
+            return Ok(_dbContext.Students.Where(n=>n.Id==id).FirstOrDefault());
         }
 
         [HttpGet("{name}")]
         public ActionResult<Student> GetStudentByName(string name)
         {
-            return Ok(StudentsRepository.Students.Where(n => n.StudentName == name).FirstOrDefault());
+            return Ok(_dbContext.Students.Where(n => n.StudentName == name).FirstOrDefault());
         }
 
         [HttpPost]
@@ -53,17 +56,17 @@ namespace CollageApp.Controllers
         {
             if (model == null) return BadRequest();
 
-            int id = StudentsRepository.Students.LastOrDefault().Id + 1;
+            
             Student student = new Student()
             {
-                Id = id,
+     
                 StudentName = model.StudentName,
                 Email = model.Email,
                 Address = model.Address,
             };
 
-            StudentsRepository.Students.Add(student);
-            model.Id = id;
+            _dbContext.Students.Add(student);
+            _dbContext.SaveChanges();
             return Ok(model);
             //return CreatedAtRoute("GetStudent", new { id = model.Id }, model);
 
@@ -78,10 +81,11 @@ namespace CollageApp.Controllers
         {
             if (id <= 0) return BadRequest();
 
-            var student = StudentsRepository.Students.Where(n=> n.Id==id).FirstOrDefault();
+            var student = _dbContext.Students.Where(n=> n.Id==id).FirstOrDefault();
             if (student == null) return NotFound();
 
-            StudentsRepository.Students.Remove(student);
+            _dbContext.Students.Remove(student);
+            _dbContext.SaveChanges();
             return Ok(true);
         }
 
@@ -96,7 +100,7 @@ namespace CollageApp.Controllers
             if(model == null)
                 return BadRequest();
 
-            var exsistingUser = StudentsRepository.Students.Where(s => s.Id == model.Id).FirstOrDefault();
+            var exsistingUser = _dbContext.Students.Where(s => s.Id == model.Id).FirstOrDefault();
 
             if(exsistingUser == null)
             {

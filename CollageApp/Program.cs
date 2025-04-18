@@ -1,4 +1,6 @@
+using CollageApp.Data;
 using CollageApp.MyLogging;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +12,11 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<IMyLogger,LogtoFile>();
+
+builder.Services.AddDbContext<CollegeDBContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("CollageAppDbConnection"));
+});
 
 var app = builder.Build();
 
