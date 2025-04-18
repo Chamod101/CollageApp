@@ -1,7 +1,9 @@
-﻿using CollageApp.Data;
+﻿using AutoMapper;
+using CollageApp.Data;
 using CollageApp.Models;
 using CollageApp.MyLogging;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace CollageApp.Controllers
 {
@@ -11,27 +13,26 @@ namespace CollageApp.Controllers
     {
         private readonly IMyLogger _myLogger;
         private readonly CollegeDBContext _dbContext;
+        private readonly IMapper _mapper;
 
-        public StudentController(IMyLogger MyLogger, CollegeDBContext dbContext)
+        public StudentController(IMyLogger MyLogger, CollegeDBContext dbContext, IMapper mapper)
         {
             _myLogger = MyLogger;
             _dbContext = dbContext;
+            _mapper = mapper;
         }
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public ActionResult<List<StudentDTO>> GetStudents()
+        public async Task<ActionResult<List<StudentDTO>>> GetStudents()
         {
-            _myLogger.Log("Get Students started");
-            var students = _dbContext.Students.Select(s => new StudentDTO
-            {
-                Id = s.Id,
-                StudentName = s.StudentName,
-                Email = s.Email,
-                Address = s.Address,
-            });
-            return Ok(students);
+
+            var students = await _dbContext.Students.ToListAsync();
+
+            var StudentDtoData = _mapper.Map<List<StudentDTO>>(students);
+            
+            return Ok(StudentDtoData);
 
         }
 
