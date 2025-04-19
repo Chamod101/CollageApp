@@ -1,5 +1,7 @@
 using CollageApp.Configurations;
 using CollageApp.Data;
+using CollageApp.Data.Repository;
+using CollageApp.Data.Repository.Interface;
 using CollageApp.MyLogging;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,6 +16,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<IMyLogger,LogtoFile>();
+builder.Services.AddScoped<IStudentRepository,StudentRepository>();
 
 builder.Services.AddAutoMapper(typeof(AutoMapperConfig));
 
