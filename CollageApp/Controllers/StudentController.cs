@@ -4,7 +4,6 @@ using CollageApp.Data.Repository.Interface;
 using CollageApp.Models;
 using CollageApp.MyLogging;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace CollageApp.Controllers
 {
@@ -45,79 +44,72 @@ namespace CollageApp.Controllers
             return Ok(result);
         }
 
-        //[HttpGet("{name}")]
-        //public ActionResult<Student> GetStudentByName(string name)
-        //{
-        //    return Ok(_dbContext.Students.Where(n => n.StudentName == name).FirstOrDefault());
-        //}
+        [HttpGet("GetStudentByName/{name}")]
+        public async Task<ActionResult<Student>> GetStudentByName(string name)
+        {
+            var result = await _studentRepository.GetStudentByName(name);
+            return Ok(result);
+        }
 
-        //[HttpPost]
-        //[Route("Create")]
-        //[ProducesResponseType(StatusCodes.Status201Created)]
-        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
-        //[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        //public ActionResult<StudentDTO> CreateStudent([FromBody]StudentDTO model)
-        //{
-        //    if (model == null) return BadRequest();
-
-
-        //    Student student = new Student()
-        //    {
-
-        //        StudentName = model.StudentName,
-        //        Email = model.Email,
-        //        Address = model.Address,
-        //    };
-
-        //    _dbContext.Students.Add(student);
-        //    _dbContext.SaveChanges();
-        //    return Ok(model);
-        //    //return CreatedAtRoute("GetStudent", new { id = model.Id }, model);
-
-        //}
-
-        //[HttpDelete("{id:int}")] 
-        //[ProducesResponseType(200)]
-        //[ProducesResponseType(400)]
-        //[ProducesResponseType(StatusCodes.Status404NotFound)]
-        //[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        //public ActionResult<bool> DeleteStudent(int id)
-        //{
-        //    if (id <= 0) return BadRequest();
-
-        //    var student = _dbContext.Students.Where(n=> n.Id==id).FirstOrDefault();
-        //    if (student == null) return NotFound();
-
-        //    _dbContext.Students.Remove(student);
-        //    _dbContext.SaveChanges();
-        //    return Ok(true);
-        //}
+        [HttpPost]
+        [Route("CreateStudent")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<StudentDTO>> CreateStudent([FromBody] StudentDTO model)
+        {
+            if (model == null) return BadRequest();
 
 
-        //[HttpPut]
-        //[Route("Update")]
-        //[ProducesResponseType(StatusCodes.Status204NoContent)]
-        //[ProducesResponseType(StatusCodes.Status404NotFound)]
-        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
-        //public ActionResult UpdateStudent([FromBody]StudentDTO model)
-        //{
-        //    if(model == null)
-        //        return BadRequest();
+            Student student = _mapper.Map<Student>(model);
 
-        //    var exsistingUser = _dbContext.Students.Where(s => s.Id == model.Id).FirstOrDefault();
 
-        //    if(exsistingUser == null)
-        //    {
-        //        return NotFound();
-        //    }
-        //    else
-        //    {
-        //        exsistingUser.StudentName = model.StudentName;
-        //        exsistingUser.Address = model.Address;
-        //        exsistingUser.Email = model.Email;
-        //    }
+            var id = await _studentRepository.CreateStudent(student);
+            model.Id = id;
+            return Ok(model);
+            //return CreatedAtRoute("GetStudent", new { id = model.Id }, model);
 
-        //    return NoContent();
-        //}
+        }
+
+        [HttpDelete("DeleteStudent/{id:int}")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<bool>> DeleteStudent(int id)
+        {
+            if (id <= 0) return BadRequest();
+
+            var student = await _studentRepository.GetStudent(id);
+            if (student == null) return NotFound($"The student with id {id} not found");
+
+            await _studentRepository.DeleteStudent(student);
+            return Ok(true);
+        }
+
+
+        [HttpPut]
+        [Route("UpdateStudent")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult> UpdateStudent([FromBody] StudentDTO model)
+        {
+            if (model == null)
+                return BadRequest();
+
+            var exsistingUser = await _studentRepository.GetStudent(model.Id,true);
+
+            if (exsistingUser == null)
+            {
+                return NotFound();
+            }
+            
+            var newRecord = _mapper.Map<Student>(model);
+
+            await _studentRepository.UpdateStudent(newRecord);
+
+            return NoContent();
+        }
     } 
 }

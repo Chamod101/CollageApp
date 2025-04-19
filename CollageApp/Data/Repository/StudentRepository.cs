@@ -14,20 +14,55 @@ namespace CollageApp.Data.Repository
             _dbContext = dbContext;
         }
 
-        public StudentDTO CreateStudent(StudentDTO model)
+        public async Task<int> CreateStudent(Student model)
         {
-            throw new NotImplementedException();
+            if (model == null)
+            {
+                throw new Exception("Model is empty");
+            }
+            else
+            {
+                await _dbContext.Students.AddAsync(model);
+                await _dbContext.SaveChangesAsync();
+            }
+
+            return model.Id;
         }
 
-        public bool DeleteStudent(int id)
+        public async Task<bool> DeleteStudent(Student student)
         {
-            throw new NotImplementedException();
+            _dbContext.Students.Remove(student);
+            await _dbContext.SaveChangesAsync();
+
+            return true;
         }
 
-        public async Task<Student> GetStudent(int id)
+        public async Task<Student> GetStudent(int id, bool useNoTracking = false)
         {
-            var student = await _dbContext.Students.Where(n => n.Id == id).FirstOrDefaultAsync();
+            var student = new Student();
 
+            if (useNoTracking == true)
+            {
+                student = await _dbContext.Students.AsNoTracking().Where(n => n.Id == id).FirstOrDefaultAsync();
+            }
+            else
+            {
+                student = await _dbContext.Students.Where(n => n.Id == id).FirstOrDefaultAsync();
+
+            }
+
+            if (student == null)
+            {
+                throw new Exception("Student not found");
+            }
+
+            return student;
+        }
+
+        public async Task<Student> GetStudentByName(string name)
+        {
+            var student = await _dbContext.Students.Where(n => n.StudentName == name).FirstOrDefaultAsync();
+            
             if(student == null)
             {
                 throw new Exception("Student not found");
@@ -36,19 +71,17 @@ namespace CollageApp.Data.Repository
             return student;
         }
 
-        public Student GetStudentByName(string name)
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task<List<Student>> GetStudents()
         {
             return await _dbContext.Students.ToListAsync();
         }
 
-        public ActionResult UpdateStudent(StudentDTO model)
+        public async Task<int> UpdateStudent(Student model)
         {
-            throw new NotImplementedException();
+            _dbContext.Students.Update(model);
+            await _dbContext.SaveChangesAsync();
+
+            return model.Id;
         }
     }
 }
