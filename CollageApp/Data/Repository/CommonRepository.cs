@@ -41,16 +41,19 @@ namespace CollageApp.Data.Repository
 
         public async Task<T> GetRecordByFilter(Expression<Func<T, bool>> filter, bool useNoTracking = false)
         {
+            T? student;
 
-            if (useNoTracking == true)
+            if (useNoTracking)
             {
-               return await _dbSet.AsNoTracking().Where(filter).FirstOrDefaultAsync();
+                student = await _dbSet.AsNoTracking().Where(filter).FirstOrDefaultAsync();
             }
             else
             {
-                return await _dbSet.Where(filter).FirstOrDefaultAsync();
+                student = await _dbSet.Where(filter).FirstOrDefaultAsync();
 
             }
+
+            return student ?? throw new InvalidOperationException("No record found");
         }
 
         //public Task<T> GetRecordByFilter2(Expression<Func<T, bool>> filter)
