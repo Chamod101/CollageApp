@@ -26,6 +26,11 @@ namespace CollageApp.Data.Config
                     DOB=new DateTime(01/01/1999)
                 }
             });
+
+            builder.HasOne(n => n.Department)
+                .WithMany(n => n.Students)
+                .HasForeignKey(n => n.DepartmentId)
+                .HasConstraintName("FK_Student_Department");
         }
     }
 }
