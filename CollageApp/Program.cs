@@ -17,6 +17,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<IMyLogger,LogtoFile>();
 builder.Services.AddScoped<IStudentRepository,StudentRepository>();
+builder.Services.AddScoped(typeof(ICommonRepository<>),typeof(CommonRepository<>));
 
 builder.Services.AddAutoMapper(typeof(AutoMapperConfig));
 

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using CollageApp.Data;
+using CollageApp.Data.Repository;
 using CollageApp.Data.Repository.Interface;
 using CollageApp.Models;
 using CollageApp.MyLogging;
@@ -13,9 +14,10 @@ namespace CollageApp.Controllers
     {
         private readonly IMyLogger _myLogger;
         private readonly IMapper _mapper;
-        private readonly IStudentRepository _studentRepository;
+        //private readonly IStudentRepository _studentRepository;
+        private readonly ICommonRepository<Student> _studentRepository;
 
-        public StudentController(IMyLogger MyLogger, IMapper mapper, IStudentRepository studentRepository)
+        public StudentController(IMyLogger MyLogger, IMapper mapper, ICommonRepository<Student> studentRepository)
         {
             _myLogger = MyLogger;
             _mapper = mapper;
@@ -29,7 +31,8 @@ namespace CollageApp.Controllers
         public async Task<ActionResult<List<StudentDTO>>> GetStudents()
         {
 
-            var students = await _studentRepository.GetStudents();
+            //var students = await _studentRepository.GetStudents();
+            var students = await _studentRepository.GetAllRecords();
 
             var StudentDtoData = _mapper.Map<List<StudentDTO>>(students);
             
@@ -40,16 +43,17 @@ namespace CollageApp.Controllers
         [HttpGet("GetStudentByID/{id:int}")]
         public async Task<ActionResult<Student>> GetStudent(int id)
         {
-            var result = await _studentRepository.GetStudent(id);
+            //var result = await _studentRepository.GetStudent(id);
+            var result = await _studentRepository.GetRecordByFilter(student => student.Id == id);
             return Ok(result);
         }
 
-        [HttpGet("GetStudentByName/{name}")]
-        public async Task<ActionResult<Student>> GetStudentByName(string name)
-        {
-            var result = await _studentRepository.GetStudentByName(name);
-            return Ok(result);
-        }
+        //[HttpGet("GetStudentByName/{name}")]
+        //public async Task<ActionResult<Student>> GetStudentByName(string name)
+        //{
+        //    var result = await _studentRepository.GetStudentByName(name);
+        //    return Ok(result);
+        //}
 
         [HttpPost]
         [Route("CreateStudent")]
@@ -64,8 +68,9 @@ namespace CollageApp.Controllers
             Student student = _mapper.Map<Student>(model);
 
 
-            var id = await _studentRepository.CreateStudent(student);
-            model.Id = id;
+            //var id = await _studentRepository.CreateStudent(student);
+            var result = await _studentRepository.CreateRecord(student);
+            model.Id = result.Id;
             return Ok(model);
             //return CreatedAtRoute("GetStudent", new { id = model.Id }, model);
 
@@ -80,10 +85,12 @@ namespace CollageApp.Controllers
         {
             if (id <= 0) return BadRequest();
 
-            var student = await _studentRepository.GetStudent(id);
+            //var student = await _studentRepository.GetStudent(id);
+            var student = await _studentRepository.GetRecordByFilter(student => student.Id == id);
             if (student == null) return NotFound($"The student with id {id} not found");
 
-            await _studentRepository.DeleteStudent(student);
+            //await _studentRepository.DeleteStudent(student);
+            await _studentRepository.DeleteRecord(student);
             return Ok(true);
         }
 
@@ -98,7 +105,8 @@ namespace CollageApp.Controllers
             if (model == null)
                 return BadRequest();
 
-            var exsistingUser = await _studentRepository.GetStudent(model.Id,true);
+            //var exsistingUser = await _studentRepository.GetStudent(model.Id,true);
+            var exsistingUser = await _studentRepository.GetRecordByFilter(student => student.Id == model.Id, true);
 
             if (exsistingUser == null)
             {
@@ -107,7 +115,8 @@ namespace CollageApp.Controllers
             
             var newRecord = _mapper.Map<Student>(model);
 
-            await _studentRepository.UpdateStudent(newRecord);
+            //await _studentRepository.UpdateStudent(newRecord);
+            await _studentRepository.UpdateRecord(newRecord);
 
             return NoContent();
         }
