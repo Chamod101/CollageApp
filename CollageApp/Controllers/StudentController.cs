@@ -15,9 +15,9 @@ namespace CollageApp.Controllers
         private readonly IMyLogger _myLogger;
         private readonly IMapper _mapper;
         //private readonly IStudentRepository _studentRepository;
-        private readonly ICommonRepository<Student> _studentRepository;
+        private readonly IStudentRepository _studentRepository;
 
-        public StudentController(IMyLogger MyLogger, IMapper mapper, ICommonRepository<Student> studentRepository)
+        public StudentController(IMyLogger MyLogger, IMapper mapper, IStudentRepository studentRepository)
         {
             _myLogger = MyLogger;
             _mapper = mapper;
@@ -119,6 +119,14 @@ namespace CollageApp.Controllers
             await _studentRepository.UpdateRecord(newRecord);
 
             return NoContent();
+        }
+
+        [HttpGet]
+        [Route("GetStudentsByAttendence")]
+        public async Task<ActionResult<List<Student>>> GetStudentsByAttendence()
+        {
+            var students = await _studentRepository.GetStudentsByAttendence();
+            return Ok(students);
         }
     } 
 }
