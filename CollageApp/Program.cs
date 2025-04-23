@@ -26,6 +26,19 @@ builder.Services.AddDbContext<CollegeDBContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("CollageAppDbConnection"));
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: "MyCors",
+        policy =>
+        {
+            //Allow specific origin
+            policy.WithOrigins("http://localhost:4200");
+
+            //Allow all origins
+            //policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+        });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -36,6 +49,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("MyCors");
 
 app.UseAuthorization();
 
