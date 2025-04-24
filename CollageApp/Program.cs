@@ -28,14 +28,22 @@ builder.Services.AddDbContext<CollegeDBContext>(options =>
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(name: "MyCors",
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+    });
+
+    options.AddPolicy(name: "AllowOnlyLocalHost",
         policy =>
         {
             //Allow specific origin
             policy.WithOrigins("http://localhost:4200");
+        });
 
-            //Allow all origins
-            //policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+    options.AddPolicy(name: "AllowOnlyGoogleApplications",
+        policy =>
+        {
+            policy.WithOrigins("http://google.com").AllowAnyHeader().AllowAnyMethod();
         });
 });
 
@@ -50,7 +58,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseCors("MyCors");
+app.UseCors();
 
 app.UseAuthorization();
 

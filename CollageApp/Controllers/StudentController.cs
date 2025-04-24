@@ -4,12 +4,14 @@ using CollageApp.Data.Repository;
 using CollageApp.Data.Repository.Interface;
 using CollageApp.Models;
 using CollageApp.MyLogging;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CollageApp.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [EnableCors(PolicyName = "AllowOnlyGoogleApplications")]
     public class StudentController : ControllerBase
     {
         private readonly IMyLogger _myLogger;
