@@ -42,6 +42,7 @@ namespace CollageApp.Controllers
 
         }
 
+        [DisableCors]
         [HttpGet("GetStudentByID/{id:int}")]
         public async Task<ActionResult<Student>> GetStudent(int id)
         {

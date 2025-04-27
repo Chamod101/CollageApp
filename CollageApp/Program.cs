@@ -58,9 +58,18 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseRouting();
+
 app.UseCors();
 
-app.UseAuthorization();
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapGet("api/GetAllStudents",
+        context => context.Response.WriteAsync("Test Response"))
+    .RequireCors("AllowOnlyLocalHost");
+
+    endpoints.MapControllers();
+});
 
 app.MapControllers();
 
